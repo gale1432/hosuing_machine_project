@@ -1,3 +1,8 @@
+#Universidad Autónoma de Chihuahua
+#Machine Learning
+#Proyecto End to End
+#Gael Aristides Hinojos Ramírez
+
 import pandas as pd
 import numpy as np
 import streamlit as st
