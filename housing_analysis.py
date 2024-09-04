@@ -49,7 +49,6 @@ with col2:
         "NEAR BAY",
         "ISLAND",
     ])
-#st.button("Predict house price")
 if st.button("Predict house price"):
     data = {'longitude': float(longitude), 'latitude': float(latitude), 'hma': float(hma), 'tr': float(tr),
             'tb': float(tb), 'pop': float(pop), 'house': float(house), 'mi': float(mi), 'op': op}
