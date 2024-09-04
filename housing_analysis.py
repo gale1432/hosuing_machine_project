@@ -8,10 +8,27 @@ def predict(data):
     lin_reg = joblib.load('linear_regression.plk')
     pipeline = joblib.load('pipeline.sav')
     pipelined_data = pipeline.fit_transform(data)
+    print(len(pipelined_data))
     return lin_reg.predict(pipelined_data)
 
-"""model = pickle.load(open('linear_regression.plk', 'rb'))
-pipeline = pickle.load('pipeline.sav', 'rb')"""
+from sklearn.base import BaseEstimator, TransformerMixin
+
+rooms_ix, bedrooms_ix, population_ix, households_ix = 3, 4, 5, 6
+
+class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
+    def __init__(self, add_bedrooms_per_room=True):
+        self.add_bedrooms_per_room = add_bedrooms_per_room
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X):
+        rooms_per_household = X[:, rooms_ix]/X[:, households_ix]
+        population_per_household = X[:, population_ix]/X[:, households_ix]
+        if self.add_bedrooms_per_room:
+            bedrooms_per_room = X[:, bedrooms_ix]/X[:, rooms_ix]
+            return np.c_[X, rooms_per_household, population_per_household, bedrooms_per_room]
+        else:
+            return np.c_[X, rooms_per_household, population_per_household]
+        
 st.title("Predecir precio de casa")
 st.header("Variables")
 col1, col2 = st.columns(2)
@@ -27,12 +44,15 @@ with col2:
     mi = st.number_input(label="Median Income")
     op = st.select_slider("Ocean Proximity", options=[
         "<1H OCEAN",
-        "INLAND"
-        "NEAR OCEAN"
-        "NEAR BAY"
-        "ISLAND"
+        "INLAND",
+        "NEAR OCEAN",
+        "NEAR BAY",
+        "ISLAND",
     ])
 #st.button("Predict house price")
 if st.button("Predict house price"):
-    result = predict(np.array([longitude, latitude, hma, tr, tb, pop, house, mi, op]))
+    data = {'longitude': float(longitude), 'latitude': float(latitude), 'hma': float(hma), 'tr': float(tr),
+            'tb': float(tb), 'pop': float(pop), 'house': float(house), 'mi': float(mi), 'op': op}
+    df = pd.DataFrame([list(data.values())], columns=['longitude', 'latitude', 'housing_median_age', 'total_rooms', 'total_bedrooms', 'population', 'households', 'median_income', 'ocean_proximity'])
+    result = predict(df)
     st.text(result[0])
